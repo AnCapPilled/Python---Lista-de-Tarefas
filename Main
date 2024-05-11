@@ -1,0 +1,68 @@
+import tkinter as tk
+from tkinter import messagebox
+import json
+
+class TaskManager:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Lista de Tarefas")
+        self.tasks = []
+
+        # Carrega as tarefas do arquivo JSON, se existir
+        try:
+            with open("tasks.json", "r") as file:
+                self.tasks = json.load(file)
+        except FileNotFoundError:
+            pass
+
+        self.task_frame = tk.Frame(self.root)
+        self.task_frame.pack(padx=20, pady=20)
+
+        self.task_entry = tk.Entry(self.task_frame, width=50)
+        self.task_entry.grid(row=0, column=0, padx=5, pady=5)
+
+        add_button = tk.Button(self.task_frame, text="Adicionar Tarefa", command=self.add_task)
+        add_button.grid(row=0, column=1, padx=5, pady=5)
+
+        self.task_listbox = tk.Listbox(self.task_frame, width=60, height=15)
+        self.task_listbox.grid(row=1, columnspan=2, padx=5, pady=5)
+
+        delete_button = tk.Button(self.task_frame, text="Excluir Tarefa", command=self.delete_task)
+        delete_button.grid(row=2, column=0, padx=5, pady=5)
+
+        save_button = tk.Button(self.task_frame, text="Salvar", command=self.save_tasks)
+        save_button.grid(row=2, column=1, padx=5, pady=5)
+
+        self.load_tasks()
+
+    def load_tasks(self):
+        self.task_listbox.delete(0, tk.END)
+        for task in self.tasks:
+            self.task_listbox.insert(tk.END, task)
+
+    def add_task(self):
+        task = self.task_entry.get()
+        if task:
+            self.tasks.append(task)
+            self.task_listbox.insert(tk.END, task)
+            self.task_entry.delete(0, tk.END)
+
+    def delete_task(self):
+        try:
+            selected_index = self.task_listbox.curselection()[0]
+            self.task_listbox.delete(selected_index)
+            del self.tasks[selected_index]
+        except IndexError:
+            messagebox.showwarning("Atenção", "Selecione uma tarefa para excluir.")
+
+    def save_tasks(self):
+        with open("tasks.json", "w") as file:
+            json.dump(self.tasks, file)
+
+def main():
+    root = tk.Tk()
+    app = TaskManager(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
